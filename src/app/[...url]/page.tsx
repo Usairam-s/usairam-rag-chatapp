@@ -3,12 +3,6 @@ import { ragChat } from "@/lib/rag-chat";
 import { redis } from "@/lib/redis";
 import { cookies } from "next/headers";
 
-interface PageProps {
-  params: {
-    url: string[]; // Use string[] for dynamic params that can contain multiple segments.
-  };
-}
-
 function reconstructUrl({ url }: { url: string[] }) {
   const decodedComponents = url.map((component) =>
     decodeURIComponent(component)
@@ -17,11 +11,11 @@ function reconstructUrl({ url }: { url: string[] }) {
   return decodedComponents.join("/");
 }
 
-const page = async ({ params }: PageProps) => {
+const Page = async ({ params }: any) => {
   // @ts-expect-error: Avoid this type check
   const sessionCookie = await cookies().get("sessionId")?.value;
+  const reconstructedUrl = reconstructUrl({ url: params.url as string[] });
 
-  const reconstructedUrl = reconstructUrl({ url: params.url });
   const sessionId = (reconstructedUrl + "--" + sessionCookie).replace(
     /\//g,
     ""
@@ -41,7 +35,7 @@ const page = async ({ params }: PageProps) => {
     await ragChat.context.add({
       type: "html",
       source: reconstructedUrl,
-      config: { chunkOverlap: 50, chunkSize: 300 },
+      config: { chunkOverlap: 50, chunkSize: 200 },
     });
 
     await redis.sadd("indexed-urls", reconstructedUrl);
@@ -52,4 +46,4 @@ const page = async ({ params }: PageProps) => {
   );
 };
 
-export default page;
+export default Page;

@@ -16,7 +16,7 @@ function reconstructUrl({ url }: { url: string[] }) {
   return decodedComponents.join("/");
 }
 const page = async ({ params }: PageProps) => {
-  //@ts-ignore
+  // @ts-expect-error
   const sessionCookie = await cookies().get("sessionId")?.value;
 
   const reconstructedUrl = reconstructUrl({ url: params.url as string[] });
